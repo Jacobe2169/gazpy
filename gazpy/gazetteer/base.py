@@ -1,4 +1,5 @@
 # coding = utf-8
+from ..element import Element
 from ..query.query_builder import QueryBuilder
 import pandas as pd
 import re, os ,inspect
@@ -78,11 +79,20 @@ class Base():
     Base class for getter
     """
 
-    def __init__(self,es_client,field_score="score"):
+    def __init__(self,es_client,**kwargs):
         """Constructor for Base"""
-        self.score_field=field_score
         self.qb=QueryBuilder()
         self.es_client=es_client
+
+        self.id_field = kwargs.get("id_field","id")
+        self.label_fields = kwargs.get("label_fields",('fr','en','es','de'))
+        self.alias_fields = kwargs.get("alias_fields",(("aliases","fr"),("aliases","es"),("aliases","en"),("aliases","de")))
+        self.coordinates_field = kwargs.get("coordinates_field","coord")
+        self.class_field = kwargs.get("class_field","class")
+
+        self.score_field=kwargs.get("score_field","score")
+
+
 
     def get_by_label(self,label,lang,score=True,size=1):
         raise NotImplementedError()
@@ -102,6 +112,12 @@ class Base():
     def get_by_id(self,id):
         raise NotImplementedError()
 
+    def to_element(self,es_query_results):
+        df=self.convert_es_to_pandas(es_query_results)
+        if df.empty:
+            return []
+        return [Element(item,self) for _,item in df.iterrows()]
+
     def convert_es_to_pandas(self,es_query_results):
         """
         Return a `pandas.Dataframe` object built from the elasticsearch query results
@@ -117,7 +133,7 @@ class Base():
             Dataframe of the elasticsearch query results
         """
         if es_query_results["hits"]["total"] == 0:
-            return None
+            return pd.DataFrame()
         df = pd.DataFrame([g["_source"] for g in es_query_results["hits"]["hits"]])
         if self.score_field in df:
             df[self.score_field] = df[self.score_field].apply(lambda x: float(x))
