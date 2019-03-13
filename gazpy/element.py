@@ -100,6 +100,14 @@ class Element():
             return objectify({lang: self.data[lang] for lang in self.p_holder.label_fields})
 
     @property
+    def name(self):
+        if not isinstance(self.p_holder.label_fields, tuple) and not isinstance(self.p_holder.label_fields, list):
+            return self.data[self.p_holder.label_fields]
+        else:
+            return objectify({lang: self.data[lang] for lang in self.p_holder.label_fields}).en
+
+
+    @property
     def alias(self):
         if not isinstance(self.p_holder.alias_fields, tuple) and not isinstance(self.p_holder.label_fields, list):
             return self.data[self.p_holder.alias_fields]
@@ -121,3 +129,7 @@ class Element():
     @property
     def other(self):
         return self.data
+
+    def __contains__(self, item):
+        return item in self.data
+

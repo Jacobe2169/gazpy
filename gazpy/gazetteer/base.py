@@ -12,6 +12,21 @@ geo_term={
     "fr":open(__geo_res_path.rstrip("/")+"/geo_term_fr").read().lower().strip().split("\n"),
     "en":open(__geo_res_path.rstrip("/")+"/geo_term_en").read().strip().split("\n")
 }
+
+def return_on_failure(value):
+  def decorate(f):
+    def applicator(*args, **kwargs):
+      try:
+         f(*args,**kwargs)
+      except:
+         return value
+         print('Error')
+
+    return applicator
+
+  return decorate
+
+
 def parse_label2(label : str,lang):
     if not lang in geo_term:
         return parse_label(label)
@@ -139,5 +154,5 @@ class Base():
             df[self.score_field] = df[self.score_field].apply(lambda x: float(x))
         else:
             df[self.score_field] = df.apply(lambda x: 0)
-        df[self.score_field].fillna(-1, inplace=True)
+        df[self.score_field].fillna(0, inplace=True)
         return df

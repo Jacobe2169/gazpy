@@ -1,5 +1,5 @@
 # coding = utf-8
-from .base import Base,parse_label,parse_label2
+from .base import Base,parse_label2,return_on_failure
 
 
 class Geonames(Base):
