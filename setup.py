@@ -7,7 +7,7 @@ from setuptools.command import install
 
 setup(
     name='gazpy',
-    version='0.1',
+    version='0.3',
     packages=['gazpy', 'gazpy.query', 'gazpy.gazetteer'],
     url='',
     license='MIT',

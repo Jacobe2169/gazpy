@@ -28,8 +28,15 @@ class Geodict(Base):
                               sorted_by=self.score_field, sized=True,
                               size=n)
         try:
-            return self.to_element(self.es_client.search("gazetteer", "place", query))
-        except :
+            res = self.to_element(self.es_client.search("gazetteer", "place", query))
+            if not len(res)>0:
+                query = self.qb.query(query_string=True,_all=True, regexp=True, regexp_value=".* ({0}) .*".format(label), field=lang,
+                              value=label, sorted=score,
+                              sorted_by=self.score_field, sized=True,
+                              size=n)
+                res = self.to_element(self.es_client.search("gazetteer", "place", query))
+            return res
+        except Exception as e:
             return []
 
     def get_n_alias_similar(self, alias, lang, n, score=True):
@@ -38,7 +45,13 @@ class Geodict(Base):
                               sorted_by=self.score_field, sized=True,
                               size=n)
         try:
-            return self.to_element(self.es_client.search("gazetteer", "place", query))
+            res= self.to_element(self.es_client.search("gazetteer", "place", query))
+            if not len(res) >0:
+                query = self.qb.query(query_string=True, _all=True, nested=True, nested_field=lang, regexp=True,
+                               regexp_value=".* ({0}) .*".format(alias), field="aliases", value=alias, sorted=score,
+                              sorted_by=self.score_field, sized=True,
+                              size=n)
+            return res
         except :
             return []
         

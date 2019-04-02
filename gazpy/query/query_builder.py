@@ -19,7 +19,7 @@ class QueryBuilder():
         query_string = kwargs.get("query_string", False)
         nested = kwargs.get("nested", False)
         match_all=kwargs.get("match_all",False)
-
+        _all =kwargs.get("_all",False)
         #Value
         value=kwargs.get("value","")
 
@@ -69,12 +69,12 @@ class QueryBuilder():
 
 
         if query_string:
-            body_query["query"]={"query_string":{"default_field":field,"query":value if not regexped else regexp_value}}
+            ff=(field if not _all else "_all")
+            body_query["query"]={"query_string":{"default_field":ff,"query":value if not regexped else regexp_value}}
         elif term:
             body_query["query"]={"term":{field:value}}
         elif match_all:
             body_query["query"] = {"match_all":{}}
-
         body_query["query"]={"bool":{"must":[body_query["query"]]}}
 
         if min_valued:
