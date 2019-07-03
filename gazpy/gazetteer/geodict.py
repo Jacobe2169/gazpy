@@ -2,7 +2,8 @@
 
 
 from .base import Base, parse_label2, return_on_failure
-
+import jellyfish
+from ..helpers import is_date
 
 class Geodict(Base):
     """"""
@@ -35,7 +36,12 @@ class Geodict(Base):
                               sorted_by=self.score_field, sized=True,
                               size=n)
                 res = self.to_element(self.es_client.search("gazetteer", "place", query))
-            return res
+
+            res_filtered = []
+            for el in res:
+                if not jellyfish.jaro_winkler(el.label.lang,label) < 0.5:
+                    res_filtered.append(el)
+            return res_filtered
         except Exception as e:
             return []
 
@@ -51,7 +57,13 @@ class Geodict(Base):
                                regexp_value=".* ({0}) .*".format(alias), field="aliases", value=alias, sorted=score,
                               sorted_by=self.score_field, sized=True,
                               size=n)
-            return res
+            res_filtered = []
+            for el in res:
+                for al in el.alialiases.lang:
+                    if not jellyfish.jaro_winkler(al, alias) < 0.5:
+                        res_filtered.append(el)
+                        break
+            return res_filtered
         except :
             return []
         
