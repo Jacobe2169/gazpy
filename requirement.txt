@@ -1,0 +1,4 @@
+elasticsearch==7.0
+numpy
+pandas
+jellyfish

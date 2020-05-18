@@ -3,7 +3,6 @@
 
 from .base import Base, parse_label2, return_on_failure
 import jellyfish
-from ..helpers import is_date
 
 class Geodict(Base):
     """"""
@@ -15,13 +14,13 @@ class Geodict(Base):
     def get_by_label(self, label, lang, score=True, size=1):
         query = self.qb.query(term=True, field=lang, value=label, sorted=score, sorted_by=self.score_field, sized=True,
                               size=size)
-        return self.to_element(self.es_client.search("gazetteer", "place", query))
+        return self.to_element(self.es_client.search("gazetteer", query))
 
     def get_by_alias(self, alias, lang, score=True, size=1):
         query = self.qb.query(term=True, nested=True, nested_field=lang, field="aliases", value=alias, sorted=score,
                               sorted_by=self.score_field, sized=True,
                               size=size)
-        return self.to_element(self.es_client.search("gazetteer", "place", query))
+        return self.to_element(self.es_client.search("gazetteer", query))
 
     def get_n_label_similar(self, label, lang, n, score=True):
         query = self.qb.query(query_string=True, regexp=True, regexp_value=parse_label2(label, lang), field=lang,
@@ -29,13 +28,13 @@ class Geodict(Base):
                               sorted_by=self.score_field, sized=True,
                               size=n)
         try:
-            res = self.to_element(self.es_client.search("gazetteer", "place", query))
+            res = self.to_element(self.es_client.search("gazetteer", query))
             if not len(res)>0:
                 query = self.qb.query(query_string=True,_all=True, regexp=True, regexp_value=".* ({0}) .*".format(label), field=lang,
                               value=label, sorted=score,
                               sorted_by=self.score_field, sized=True,
                               size=n)
-                res = self.to_element(self.es_client.search("gazetteer", "place", query))
+                res = self.to_element(self.es_client.search("gazetteer", query))
 
             res_filtered = []
             for el in res:
@@ -51,7 +50,7 @@ class Geodict(Base):
                               sorted_by=self.score_field, sized=True,
                               size=n)
         try:
-            res= self.to_element(self.es_client.search("gazetteer", "place", query))
+            res= self.to_element(self.es_client.search("gazetteer", query))
             if not len(res) >0:
                 query = self.qb.query(query_string=True, _all=True, nested=True, nested_field=lang, regexp=True,
                                regexp_value=".* ({0}) .*".format(alias), field="aliases", value=alias, sorted=score,
@@ -73,12 +72,12 @@ class Geodict(Base):
                               radius_centroid=(lon, lat), sorted=score,
                               sorted_by=self.score_field, sized=True, geo_field="coord",
                               size=size)
-        return self.to_element(self.es_client.search("gazetteer", "place", query))
+        return self.to_element(self.es_client.search("gazetteer", query))
 
     def get_by_id(self, id):
         query = self.qb.query(term=True, field="id", value=id, sized=True,
                               size=1)
-        return self.to_element(self.es_client.search("gazetteer", "place", query))
+        return self.to_element(self.es_client.search("gazetteer", query))
 
     def get_by_other_id(self, id, identifier="wikidata"):
         if not identifier in ['wikidata', 'geonames']:
@@ -89,4 +88,4 @@ class Geodict(Base):
             id_field = "geonameID"
         query = self.qb.query(term=True, field=id_field, value=id, sized=True,
                               size=1)
-        return self.to_element(self.es_client.search("gazetteer", "place", query))
+        return self.to_element(self.es_client.search("gazetteer", query))
